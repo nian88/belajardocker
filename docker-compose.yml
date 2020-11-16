@@ -1,0 +1,44 @@
+version: '2.2'
+networks:
+  dakon_network:
+    driver: bridge
+services:
+  db:
+    networks:
+        - dakon_network
+    build:
+      context: ./
+      dockerfile: docker/database.dockerfile
+    image: feed_db
+    container_name: feed_db
+    restart: always
+
+  api:
+    networks:
+      - dakon_network
+    build:
+      context: ./
+      dockerfile: docker/api.dockerfile
+    image: dakon_api
+    container_name: dakon_api
+    volumes:
+      - ./api:/var/www
+    restart: always
+    depends_on:
+      - db
+
+  web:
+    networks:
+      - dakon_network
+    build:
+      context: ./
+      dockerfile: docker/web.dockerfile
+    image: dakon_server
+    container_name: dakon_server
+    ports:
+      - "8080:80"
+    volumes:
+      - ./api:/var/www
+    restart: always
+    depends_on:
+      - api
